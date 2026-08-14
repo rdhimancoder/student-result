@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Result Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #3498db;
+        }
+
+        button {
+            padding: 12px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        .result-card {
+            display: none;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .result-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .result-body {
+            padding: 20px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            color: #666;
+            font-weight: bold;
+        }
+
+        .value {
+            color: #2c3e50;
+        }
+
+        .pass {
+            color: green;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .fail {
+            color: red;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .error-msg {
+            display: none;
+            text-align: center;
+            color: red;
+            margin-top: 15px;
+            font-size: 16px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎓 Student Result Portal</h1>
+
+    <div class="search-box">
+        <input 
+            type="text" 
+            id="rollInput" 
+            placeholder="Enter Roll Number..."
+            onkeypress="handleEnter(event)"
+        />
+        <button onclick="searchResult()">Search</button>
+    </div>
+
+    <div class="loading" id="loading">⏳ Loading...</div>
+    <div class="error-msg" id="errorMsg">❌ Roll Number not found!</div>
+
+    <div class="result-card" id="resultCard">
+        <div class="result-header">📄 Student Result</div>
+        <div class="result-body" id="resultBody"></div>
+    </div>
+</div>
+
+<script>
+    // 🔴 REPLACE THIS WITH YOUR GOOGLE SHEET CSV URL
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/pub?gid=0&single=true&output=csv";
+
+    let studentsData = [];
+
+    // Fetch data when page loads
+    window.onload = function() {
+        fetchSheetData();
+    };
+
+    // Fetch CSV data from Google Sheets
+    function fetchSheetData() {
+        document.getElementById("loading").style.display = "block";
+
+        fetch(SHEET_URL)
+            .then(response => response.text())
+            .then(csv => {
+                studentsData = parseCSV(csv);
+                document.getElementById("loading").style.display = "none";
+                console.log("Data loaded:", studentsData.length, "students");
+            })
+            .catch(error => {
+                document.getElementById("loading").style.display = "none";
+                console.error("Error fetching data:", error);
+            });
+    }
+
+    // Parse CSV text to array of objects
+    function parseCSV(csv) {
+        const lines = csv.trim().split("\n");
+        const headers = lines[0].split(",").map(h => h.trim().replace(/"/g, ''));
+        const data = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(",").map(v => v.trim().replace(/"/g, ''));
+            if (values.length === headers.length) {
+                const obj = {};
+                headers.forEach((header, index) => {
+                    obj[header] = values[index];
+                });
+                data.push(obj);
+            }
+        }
+        return data;
+    }
+
+    // Search result by roll number
+    function searchResult() {
+        const rollNo = document.getElementById("rollInput").value.trim();
+        const resultCard = document.getElementById("resultCard");
+        const errorMsg = document.getElementById("errorMsg");
+        const resultBody = document.getElementById("resultBody");
+
+        // Hide previous results
+        resultCard.style.display = "none";
+        errorMsg.style.display = "none";
+
+        if (!rollNo) {
+            alert("Please enter a Roll Number!");
+            return;
+        }
+
+        // Search student
+        const student = studentsData.find(s => 
+            s["Roll No"] && s["Roll No"].toString().toLowerCase() === rollNo.toLowerCase()
+        );
+
+        if (student) {
+            // Display result
+            let html = "";
+            for (const [key, value] of Object.entries(student)) {
+                let valueClass = "value";
+                if (key === "Result") {
+                    valueClass = value.toLowerCase() === "pass" ? "pass" : "fail";
+                }
+                html += `
+                    <div class="result-row">
+                        <span class="label">${key}</span>
+                        <span class="${valueClass}">${value}</span>
+                    </div>
+                `;
+            }
+            resultBody.innerHTML = html;
+            resultCard.style.display = "block";
+        } else {
+            errorMsg.style.display = "block";
+        }
+    }
+
+    // Allow Enter key to search
+    function handleEnter(event) {
+        if (event.key === "Enter") {
+            searchResult();
+        }
+    }
+</script>
+
+</body>
+</html>
