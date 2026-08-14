@@ -743,7 +743,8 @@
     function showResult(student) {
 
         // Set name and roll in banner
-        document.getElementById("displayName").textContent = student["Student Name"] || "Student";
+        document.getElementById("displayName").textContent = student["Name"] || "—";; 
+        /*student["Student Name"] || "Student";*/
         document.getElementById("displayRoll").textContent = "Roll No: " + (student["Roll No"] || "—");
 
         // Build info cards for the 4 columns
