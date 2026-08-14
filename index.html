@@ -526,7 +526,7 @@
         /* ── Print ── */
         @media print {
             /* Hide background, headers, search bars, and controls */
-            .bg-circle, .confetti-box, .header,
+            .bg-circle, .confetti-box, 
             .search-area, .result-footer, .page-footer { 
                 display: none !important; 
             }
@@ -546,7 +546,7 @@
             }
         
             /* Display the result screen clearly */
-            .result-screen { 
+            .result-screen, .header { 
                 display: block !important; 
             }
         
@@ -675,7 +675,7 @@
 </div><!-- /main-card -->
 
 <div class="page-footer">
-    © 2026 <span>Nalanda Computer &amp; Vocational Training Centre</span> · All Rights Reserved
+    © <span id="year"></span> <span>Nalanda Computer &amp; Vocational Training Centre</span> · All Rights Reserved
 </div>
 
 <script>
@@ -861,8 +861,11 @@
         }
 
         // Clear confetti after animation ends
-        setTimeout(() => { box.innerHTML = ""; }, 5000);
+        setTimeout(() => { box.innerHTML = ""; }, 7000);
     }
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+    
 
 </script>
 </body>
