@@ -525,10 +525,36 @@
 
         /* ── Print ── */
         @media print {
-            body, .bg-circle, .confetti-box, .header,
-            .search-area, .result-footer, .page-footer { display: none; }
-            .main-card  { box-shadow: none; }
-            .result-screen { display: block !important; }
+            /* Hide background, headers, search bars, and controls */
+            .bg-circle, .confetti-box, .header,
+            .search-area, .result-footer, .page-footer { 
+                display: none !important; 
+            }
+        
+            /* Reset background for clean white paper printing */
+            body { 
+                background: white !important; 
+                padding: 0 !important; 
+            }
+        
+            /* Ensure card fills width and removes web box-shadow */
+            .main-card { 
+                box-shadow: none !important; 
+                max-width: 100% !important; 
+                width: 100% !important; 
+                border: 1px solid #ccc !important; 
+            }
+        
+            /* Display the result screen clearly */
+            .result-screen { 
+                display: block !important; 
+            }
+        
+            /* Force background colors and gradients to print */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
 
     </style>
